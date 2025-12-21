@@ -48,6 +48,9 @@ export default function RootLayout({
                 <Link href="/species" className="transition-colors hover:text-primary">
                   Species
                 </Link>
+                <Link href="/starships" className="transition-colors hover:text-primary">
+                  Starships
+                </Link>
                 <Link href="/films" className="transition-colors hover:text-primary">
                   Films
                 </Link>

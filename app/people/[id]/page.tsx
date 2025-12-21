@@ -2,11 +2,12 @@ import { getPerson, extractIdFromUrl as extractPersonId } from "@/lib/swapi/peop
 import { getPlanet, extractIdFromUrl as extractPlanetId } from "@/lib/swapi/planets";
 import { getFilm, extractIdFromUrl as extractFilmId } from "@/lib/swapi/films";
 import { getSpecies, extractIdFromUrl as extractSpeciesId } from "@/lib/swapi/species";
+import { getStarship, extractIdFromUrl as extractStarshipId } from "@/lib/swapi/starships";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film, Dna } from "lucide-react";
+import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film, Dna, Rocket } from "lucide-react";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -40,7 +41,7 @@ export default async function PersonPage({
         const homeworldId = extractPlanetId(person.homeworld);
 
         // Resolve related data in parallel
-        const [homeworld, films, speciesList] = await Promise.all([
+        const [homeworld, films, speciesList, starshipList] = await Promise.all([
             getPlanet(homeworldId).catch(() => null),
             Promise.all(
                 person.films.map(url => {
@@ -52,6 +53,12 @@ export default async function PersonPage({
                 person.species.map(url => {
                     const sid = extractSpeciesId(url);
                     return getSpecies(sid!).catch(() => ({ name: "Unknown Species", url }));
+                })
+            ),
+            Promise.all(
+                person.starships.map(url => {
+                    const sid = extractStarshipId(url);
+                    return getStarship(sid!).catch(() => ({ name: "Unknown Starship", url }));
                 })
             )
         ]);
@@ -183,16 +190,35 @@ export default async function PersonPage({
 
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Piloted Crafts</CardTitle>
-                                    <CardDescription>{person.vehicles.length + person.starships.length} crafts</CardDescription>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Rocket className="h-4 w-4" /> Piloted Crafts
+                                    </CardTitle>
+                                    <CardDescription>{person.vehicles.length + person.starships.length} crafts recorded</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="text-sm">
-                                            <span className="text-muted-foreground">Vehicles:</span> {person.vehicles.length}
-                                        </div>
-                                        <div className="text-sm">
-                                            <span className="text-muted-foreground">Starships:</span> {person.starships.length}
+                                    <div className="flex flex-col gap-4">
+                                        {starshipList.length > 0 && (
+                                            <div className="space-y-2">
+                                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Starships</span>
+                                                <ul className="text-sm space-y-1">
+                                                    {starshipList.map((ship, i) => {
+                                                        const sid = extractStarshipId(person.starships[i]);
+                                                        return (
+                                                            <li key={person.starships[i]}>
+                                                                <Link href={`/starships/${sid}`} className="text-primary hover:underline block truncate">
+                                                                    {ship.name}
+                                                                </Link>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </div>
+                                        )}
+                                        <div className="text-sm flex flex-col gap-1">
+                                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Other Crafts</span>
+                                            <div className="text-muted-foreground">
+                                                Vehicles: {person.vehicles.length}
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>
