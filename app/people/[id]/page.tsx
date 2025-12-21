@@ -1,11 +1,12 @@
 import { getPerson, extractIdFromUrl as extractPersonId } from "@/lib/swapi/people";
 import { getPlanet, extractIdFromUrl as extractPlanetId } from "@/lib/swapi/planets";
 import { getFilm, extractIdFromUrl as extractFilmId } from "@/lib/swapi/films";
+import { getSpecies, extractIdFromUrl as extractSpeciesId } from "@/lib/swapi/species";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film } from "lucide-react";
+import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film, Dna } from "lucide-react";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -38,13 +39,19 @@ export default async function PersonPage({
         const person = await getPerson(id);
         const homeworldId = extractPlanetId(person.homeworld);
 
-        // Resolve homeworld and films in parallel
-        const [homeworld, films] = await Promise.all([
+        // Resolve related data in parallel
+        const [homeworld, films, speciesList] = await Promise.all([
             getPlanet(homeworldId).catch(() => null),
             Promise.all(
                 person.films.map(url => {
                     const fid = extractFilmId(url);
                     return getFilm(fid).catch(() => ({ title: "Unknown Film", url }));
+                })
+            ),
+            Promise.all(
+                person.species.map(url => {
+                    const sid = extractSpeciesId(url);
+                    return getSpecies(sid!).catch(() => ({ name: "Unknown Species", url }));
                 })
             )
         ]);
@@ -89,6 +96,16 @@ export default async function PersonPage({
                             <Separator />
                             <div className="flex flex-wrap gap-2 pt-2">
                                 <Badge variant="secondary" className="capitalize">{person.gender}</Badge>
+                                {speciesList.map((s, i) => {
+                                    const sid = extractSpeciesId(person.species[i]);
+                                    return (
+                                        <Link key={person.species[i]} href={`/species/${sid}`}>
+                                            <Badge variant="outline" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                                                {s.name}
+                                            </Badge>
+                                        </Link>
+                                    );
+                                })}
                             </div>
                         </CardContent>
                     </Card>

@@ -1,6 +1,6 @@
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
-import { Users, Globe, Film, ChevronRight } from "lucide-react";
+import { Users, Globe, Film, ChevronRight, Dna } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Page() {
@@ -31,7 +31,7 @@ export default function Page() {
                 </div>
             </div>
 
-            <div className="mt-20 grid grid-cols-1 gap-6 sm:grid-cols-3 w-full max-w-5xl px-4">
+            <div className="mt-20 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 w-full max-w-6xl px-4">
                 <Link href="/people" className="group">
                     <div className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-card border border-border shadow-sm transition-all hover:shadow-md hover:border-primary/50 hover:-translate-y-1">
                         <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -58,6 +58,21 @@ export default function Page() {
                         </div>
                         <div className="flex items-center text-xs font-semibold text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
                             View Planets <ChevronRight className="ml-1 h-3 w-3" />
+                        </div>
+                    </div>
+                </Link>
+
+                <Link href="/species" className="group">
+                    <div className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-card border border-border shadow-sm transition-all hover:shadow-md hover:border-primary/50 hover:-translate-y-1">
+                        <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                            <Dna className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-xl font-bold tracking-tight">Species</h2>
+                            <p className="text-sm text-muted-foreground">Discover diverse inhabitants</p>
+                        </div>
+                        <div className="flex items-center text-xs font-semibold text-green-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                            View Species <ChevronRight className="ml-1 h-3 w-3" />
                         </div>
                     </div>
                 </Link>
