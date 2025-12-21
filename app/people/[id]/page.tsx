@@ -3,11 +3,12 @@ import { getPlanet, extractIdFromUrl as extractPlanetId } from "@/lib/swapi/plan
 import { getFilm, extractIdFromUrl as extractFilmId } from "@/lib/swapi/films";
 import { getSpecies, extractIdFromUrl as extractSpeciesId } from "@/lib/swapi/species";
 import { getStarship, extractIdFromUrl as extractStarshipId } from "@/lib/swapi/starships";
+import { getVehicle, extractIdFromUrl as extractVehicleId } from "@/lib/swapi/vehicles";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film, Dna, Rocket } from "lucide-react";
+import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film, Dna, Rocket, Truck } from "lucide-react";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -41,7 +42,7 @@ export default async function PersonPage({
         const homeworldId = extractPlanetId(person.homeworld);
 
         // Resolve related data in parallel
-        const [homeworld, films, speciesList, starshipList] = await Promise.all([
+        const [homeworld, films, speciesList, starshipList, vehicleList] = await Promise.all([
             getPlanet(homeworldId).catch(() => null),
             Promise.all(
                 person.films.map(url => {
@@ -59,6 +60,12 @@ export default async function PersonPage({
                 person.starships.map(url => {
                     const sid = extractStarshipId(url);
                     return getStarship(sid!).catch(() => ({ name: "Unknown Starship", url }));
+                })
+            ),
+            Promise.all(
+                person.vehicles.map(url => {
+                    const vid = extractVehicleId(url);
+                    return getVehicle(vid!).catch(() => ({ name: "Unknown Vehicle", url }));
                 })
             )
         ]);
@@ -214,12 +221,23 @@ export default async function PersonPage({
                                                 </ul>
                                             </div>
                                         )}
-                                        <div className="text-sm flex flex-col gap-1">
-                                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Other Crafts</span>
-                                            <div className="text-muted-foreground">
-                                                Vehicles: {person.vehicles.length}
+                                        {vehicleList.length > 0 && (
+                                            <div className="space-y-2">
+                                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Vehicles</span>
+                                                <ul className="text-sm space-y-1">
+                                                    {vehicleList.map((vehicle, i) => {
+                                                        const vid = extractVehicleId(person.vehicles[i]);
+                                                        return (
+                                                            <li key={person.vehicles[i]}>
+                                                                <Link href={`/vehicles/${vid}`} className="text-primary hover:underline block truncate">
+                                                                    {vehicle.name}
+                                                                </Link>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
