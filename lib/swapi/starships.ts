@@ -45,12 +45,12 @@ export async function getStarship(id: string): Promise<Starship> {
     return StarshipSchema.parse(data);
 }
 
-export async function searchStarships(query: string): Promise<StarshipResponse> {
-    const url = query
-        ? `${BASE_URL}/starships/?search=${encodeURIComponent(query)}`
-        : `${BASE_URL}/starships/`;
+export async function searchStarships(query: string, page: number = 1): Promise<StarshipResponse> {
+    const url = new URL(`${BASE_URL}/starships/`);
+    if (query) url.searchParams.set("search", query);
+    if (page > 1) url.searchParams.set("page", page.toString());
 
-    const res = await fetch(url);
+    const res = await fetch(url.toString());
 
     if (!res.ok) {
         throw new ApiError(res.status, res.statusText);

@@ -44,8 +44,12 @@ export async function getPerson(id: string): Promise<Person> {
     return PersonSchema.parse(data);
 }
 
-export async function searchPeople(query: string): Promise<PeopleResponse> {
-    const response = await fetch(`${BASE_URL}/people/?search=${encodeURIComponent(query)}`);
+export async function searchPeople(query: string, page: number = 1): Promise<PeopleResponse> {
+    const url = new URL(`${BASE_URL}/people/`);
+    if (query) url.searchParams.set("search", query);
+    if (page > 1) url.searchParams.set("page", page.toString());
+
+    const response = await fetch(url.toString());
 
     if (!response.ok) {
         throw new ApiError(response.status, response.statusText);

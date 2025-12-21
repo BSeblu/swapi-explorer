@@ -42,12 +42,12 @@ export async function getSpecies(id: string): Promise<Species> {
     return SpeciesSchema.parse(data);
 }
 
-export async function searchSpecies(query: string): Promise<SpeciesResponse> {
-    const url = query
-        ? `${BASE_URL}/species/?search=${encodeURIComponent(query)}`
-        : `${BASE_URL}/species/`;
+export async function searchSpecies(query: string, page: number = 1): Promise<SpeciesResponse> {
+    const url = new URL(`${BASE_URL}/species/`);
+    if (query) url.searchParams.set("search", query);
+    if (page > 1) url.searchParams.set("page", page.toString());
 
-    const res = await fetch(url);
+    const res = await fetch(url.toString());
 
     if (!res.ok) {
         throw new ApiError(res.status, res.statusText);

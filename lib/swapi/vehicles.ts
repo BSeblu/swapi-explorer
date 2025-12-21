@@ -43,12 +43,12 @@ export async function getVehicle(id: string): Promise<Vehicle> {
     return VehicleSchema.parse(data);
 }
 
-export async function searchVehicles(query: string): Promise<VehicleResponse> {
-    const url = query
-        ? `${BASE_URL}/vehicles/?search=${encodeURIComponent(query)}`
-        : `${BASE_URL}/vehicles/`;
+export async function searchVehicles(query: string, page: number = 1): Promise<VehicleResponse> {
+    const url = new URL(`${BASE_URL}/vehicles/`);
+    if (query) url.searchParams.set("search", query);
+    if (page > 1) url.searchParams.set("page", page.toString());
 
-    const res = await fetch(url);
+    const res = await fetch(url.toString());
 
     if (!res.ok) {
         throw new ApiError(res.status, res.statusText);
