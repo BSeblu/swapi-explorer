@@ -38,9 +38,15 @@ export default function RootLayout({
               <Link href="/" className="font-bold text-xl tracking-tighter">
                 SWAPI <span className="text-primary text-sm font-mono tracking-normal">Explorer</span>
               </Link>
-              <nav className="flex items-center gap-4 text-sm font-medium">
+              <nav className="flex items-center gap-6 text-sm font-medium">
                 <Link href="/people" className="transition-colors hover:text-primary">
                   People
+                </Link>
+                <Link href="/planets" className="transition-colors hover:text-primary">
+                  Planets
+                </Link>
+                <Link href="/films" className="transition-colors hover:text-primary">
+                  Films
                 </Link>
               </nav>
             </div>

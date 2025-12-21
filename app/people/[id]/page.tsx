@@ -1,9 +1,11 @@
-import { getPerson } from "@/lib/swapi/people";
+import { getPerson, extractIdFromUrl as extractPersonId } from "@/lib/swapi/people";
+import { getPlanet, extractIdFromUrl as extractPlanetId } from "@/lib/swapi/planets";
+import { getFilm, extractIdFromUrl as extractFilmId } from "@/lib/swapi/films";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette } from "lucide-react";
+import { ArrowLeft, User, MapPin, Calendar, Scale, Ruler, Palette, Film } from "lucide-react";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -34,6 +36,18 @@ export default async function PersonPage({
 
     try {
         const person = await getPerson(id);
+        const homeworldId = extractPlanetId(person.homeworld);
+
+        // Resolve homeworld and films in parallel
+        const [homeworld, films] = await Promise.all([
+            getPlanet(homeworldId).catch(() => null),
+            Promise.all(
+                person.films.map(url => {
+                    const fid = extractFilmId(url);
+                    return getFilm(fid).catch(() => ({ title: "Unknown Film", url }));
+                })
+            )
+        ]);
 
         return (
             <div className="flex flex-col gap-6">
@@ -61,12 +75,20 @@ export default async function PersonPage({
                             </div>
                             <div className="flex items-center gap-3">
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">Homeworld: {person.homeworld}</span>
+                                <span className="text-sm">
+                                    Homeworld:{" "}
+                                    {homeworld ? (
+                                        <Link href={`/planets/${homeworldId}`} className="text-primary hover:underline">
+                                            {homeworld.name}
+                                        </Link>
+                                    ) : (
+                                        "Unknown"
+                                    )}
+                                </span>
                             </div>
                             <Separator />
                             <div className="flex flex-wrap gap-2 pt-2">
-                                <Badge variant="secondary">{person.gender}</Badge>
-                                {person.species.length > 0 && <Badge>Species</Badge>}
+                                <Badge variant="secondary" className="capitalize">{person.gender}</Badge>
                             </div>
                         </CardContent>
                     </Card>
@@ -118,23 +140,34 @@ export default async function PersonPage({
                         <div className="grid gap-6 sm:grid-cols-2">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Films</CardTitle>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Film className="h-4 w-4" /> Films
+                                    </CardTitle>
                                     <CardDescription>Appeared in {person.films.length} films</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ul className="text-sm text-muted-foreground list-disc pl-4">
-                                        {person.films.slice(0, 5).map(film => (
-                                            <li key={film} className="mb-1 truncate">{film}</li>
-                                        ))}
-                                        {person.films.length > 5 && <li>...and {person.films.length - 5} more</li>}
+                                    <ul className="text-sm list-none space-y-2">
+                                        {films.map((film, index) => {
+                                            const fid = extractFilmId(person.films[index]);
+                                            return (
+                                                <li key={person.films[index]}>
+                                                    <Link
+                                                        href={`/films/${fid}`}
+                                                        className="text-primary hover:underline block truncate"
+                                                    >
+                                                        {film.title}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
                                     </ul>
                                 </CardContent>
                             </Card>
 
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Vehicles & Ships</CardTitle>
-                                    <CardDescription>Piloted {person.vehicles.length + person.starships.length} crafts</CardDescription>
+                                    <CardTitle className="text-lg">Piloted Crafts</CardTitle>
+                                    <CardDescription>{person.vehicles.length + person.starships.length} crafts</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex flex-col gap-2">

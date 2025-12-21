@@ -38,11 +38,7 @@ export async function getPerson(id: string): Promise<Person> {
     const response = await fetch(`${BASE_URL}/people/${id}/`);
 
     if (!response.ok) {
-        throw new ApiError(
-            `Failed to fetch person: ${response.status} ${response.statusText}`,
-            response.status,
-            response.statusText
-        );
+        throw new ApiError(response.status, response.statusText);
     }
     const data = await response.json();
     return PersonSchema.parse(data);
@@ -52,11 +48,7 @@ export async function searchPeople(query: string): Promise<PeopleResponse> {
     const response = await fetch(`${BASE_URL}/people/?search=${encodeURIComponent(query)}`);
 
     if (!response.ok) {
-        throw new ApiError(
-            `Failed to search people: ${response.status} ${response.statusText}`,
-            response.status,
-            response.statusText
-        );
+        throw new ApiError(response.status, response.statusText);
     }
     const data = await response.json();
     return PeopleResponseSchema.parse(data);
