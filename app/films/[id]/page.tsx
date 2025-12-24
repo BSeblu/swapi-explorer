@@ -1,9 +1,13 @@
 import { getFilm } from "@/lib/swapi/films";
+import { getPerson, extractIdFromUrl as extractPersonId } from "@/lib/swapi/people";
+import { getPlanet, extractIdFromUrl as extractPlanetId } from "@/lib/swapi/planets";
+import { getStarship, extractIdFromUrl as extractStarshipId } from "@/lib/swapi/starships";
+import { getVehicle, extractIdFromUrl as extractVehicleId } from "@/lib/swapi/vehicles";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { ArrowLeft, Film, User, Calendar, Quote, Users, Globe, Box } from "lucide-react";
+import { ArrowLeft, Film, User, Calendar, Quote, Users, Globe, Box, Rocket, Truck } from "lucide-react";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -34,6 +38,33 @@ export default async function FilmPage({
 
     try {
         const film = await getFilm(id);
+
+        const [characters, planets, starships, vehicles] = await Promise.all([
+            Promise.all(
+                film.characters.slice(0, 8).map(url => {
+                    const pid = extractPersonId(url);
+                    return getPerson(pid).catch(() => ({ name: "Unknown Character", url }));
+                })
+            ),
+            Promise.all(
+                film.planets.slice(0, 8).map(url => {
+                    const pid = extractPlanetId(url);
+                    return getPlanet(pid).catch(() => ({ name: "Unknown Planet", url }));
+                })
+            ),
+            Promise.all(
+                film.starships.slice(0, 5).map(url => {
+                    const sid = extractStarshipId(url);
+                    return getStarship(sid!).catch(() => ({ name: "Unknown Starship", url }));
+                })
+            ),
+            Promise.all(
+                film.vehicles.slice(0, 5).map(url => {
+                    const vid = extractVehicleId(url);
+                    return getVehicle(vid!).catch(() => ({ name: "Unknown Vehicle", url }));
+                })
+            )
+        ]);
 
         return (
             <div className="flex flex-col gap-6">
@@ -100,11 +131,25 @@ export default async function FilmPage({
                                 <CardDescription>{film.characters.length} characters appeared</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
-                                    {film.characters.slice(0, 8).map(url => (
-                                        <li key={url} className="truncate">{url}</li>
-                                    ))}
-                                    {film.characters.length > 8 && <li>...and {film.characters.length - 8} more</li>}
+                                <ul className="text-sm space-y-2">
+                                    {characters.map((person, index) => {
+                                        const pid = extractPersonId(film.characters[index]);
+                                        return (
+                                            <li key={film.characters[index]}>
+                                                <Link
+                                                    href={`/people/${pid}`}
+                                                    className="text-primary hover:underline block truncate"
+                                                >
+                                                    {person.name}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                    {film.characters.length > 8 && (
+                                        <li className="text-xs text-muted-foreground pt-1">
+                                            ...and {film.characters.length - 8} more
+                                        </li>
+                                    )}
                                 </ul>
                             </CardContent>
                         </Card>
@@ -117,11 +162,25 @@ export default async function FilmPage({
                                 <CardDescription>{film.planets.length} featured locations</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ul className="text-xs text-muted-foreground list-disc pl-4 space-y-1">
-                                    {film.planets.slice(0, 8).map(url => (
-                                        <li key={url} className="truncate">{url}</li>
-                                    ))}
-                                    {film.planets.length > 8 && <li>...and {film.planets.length - 8} more</li>}
+                                <ul className="text-sm space-y-2">
+                                    {planets.map((planet, index) => {
+                                        const pid = extractPlanetId(film.planets[index]);
+                                        return (
+                                            <li key={film.planets[index]}>
+                                                <Link
+                                                    href={`/planets/${pid}`}
+                                                    className="text-primary hover:underline block truncate"
+                                                >
+                                                    {planet.name}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                    {film.planets.length > 8 && (
+                                        <li className="text-xs text-muted-foreground pt-1">
+                                            ...and {film.planets.length - 8} more
+                                        </li>
+                                    )}
                                 </ul>
                             </CardContent>
                         </Card>
@@ -134,16 +193,60 @@ export default async function FilmPage({
                                 <CardDescription>{film.starships.length} ships, {film.vehicles.length} vehicles</CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-4">
-                                <div className="space-y-1">
-                                    <span className="text-xs font-semibold text-muted-foreground">Starships</span>
-                                    <ul className="text-xs text-muted-foreground list-disc pl-4">
-                                        {film.starships.slice(0, 3).map(url => <li key={url} className="truncate">{url}</li>)}
+                                <div className="space-y-2">
+                                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                                        <Rocket className="h-3 w-3" /> Starships
+                                    </span>
+                                    <ul className="text-sm space-y-1">
+                                        {starships.map((ship, index) => {
+                                            const sid = extractStarshipId(film.starships[index]);
+                                            return (
+                                                <li key={film.starships[index]}>
+                                                    <Link
+                                                        href={`/starships/${sid}`}
+                                                        className="text-primary hover:underline block truncate"
+                                                    >
+                                                        {ship.name}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                        {film.starships.length > 5 && (
+                                            <li className="text-xs text-muted-foreground">
+                                                ...and {film.starships.length - 5} more
+                                            </li>
+                                        )}
+                                        {film.starships.length === 0 && (
+                                            <li className="text-muted-foreground italic text-xs">None recorded</li>
+                                        )}
                                     </ul>
                                 </div>
-                                <div className="space-y-1">
-                                    <span className="text-xs font-semibold text-muted-foreground">Vehicles</span>
-                                    <ul className="text-xs text-muted-foreground list-disc pl-4">
-                                        {film.vehicles.slice(0, 3).map(url => <li key={url} className="truncate">{url}</li>)}
+                                <div className="space-y-2">
+                                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                                        <Truck className="h-3 w-3" /> Vehicles
+                                    </span>
+                                    <ul className="text-sm space-y-1">
+                                        {vehicles.map((vehicle, index) => {
+                                            const vid = extractVehicleId(film.vehicles[index]);
+                                            return (
+                                                <li key={film.vehicles[index]}>
+                                                    <Link
+                                                        href={`/vehicles/${vid}`}
+                                                        className="text-primary hover:underline block truncate"
+                                                    >
+                                                        {vehicle.name}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                        {film.vehicles.length > 5 && (
+                                            <li className="text-xs text-muted-foreground">
+                                                ...and {film.vehicles.length - 5} more
+                                            </li>
+                                        )}
+                                        {film.vehicles.length === 0 && (
+                                            <li className="text-muted-foreground italic text-xs">None recorded</li>
+                                        )}
                                     </ul>
                                 </div>
                             </CardContent>

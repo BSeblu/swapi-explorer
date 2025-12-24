@@ -1,9 +1,11 @@
 import { getPlanet } from "@/lib/swapi/planets";
+import { getFilm, extractIdFromUrl as extractFilmId } from "@/lib/swapi/films";
+import { getPerson, extractIdFromUrl as extractPersonId } from "@/lib/swapi/people";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
-import { ArrowLeft, Globe, Users, Thermometer, Box, Compass, RotateCcw } from "lucide-react";
+import { ArrowLeft, Globe, Users, Thermometer, Box, Compass, RotateCcw, Film as FilmIcon, User } from "lucide-react";
 import { Metadata } from "next";
 
 export async function generateMetadata({
@@ -34,6 +36,21 @@ export default async function PlanetPage({
 
     try {
         const planet = await getPlanet(id);
+
+        const [films, residents] = await Promise.all([
+            Promise.all(
+                planet.films.map(url => {
+                    const fid = extractFilmId(url);
+                    return getFilm(fid).catch(() => ({ title: "Unknown Film", url }));
+                })
+            ),
+            Promise.all(
+                planet.residents.slice(0, 5).map(url => {
+                    const pid = extractPersonId(url);
+                    return getPerson(pid).catch(() => ({ name: "Unknown Resident", url }));
+                })
+            )
+        ]);
 
         return (
             <div className="flex flex-col gap-6">
@@ -110,28 +127,62 @@ export default async function PlanetPage({
                         <div className="grid gap-6 sm:grid-cols-2">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Films</CardTitle>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <FilmIcon className="h-4 w-4" /> Films
+                                    </CardTitle>
                                     <CardDescription>Featured in {planet.films.length} films</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ul className="text-sm text-muted-foreground list-disc pl-4">
-                                        {planet.films.map(film => (
-                                            <li key={film} className="mb-1 truncate text-xs">{film}</li>
-                                        ))}
+                                    <ul className="text-sm space-y-2">
+                                        {films.map((film, index) => {
+                                            const fid = extractFilmId(planet.films[index]);
+                                            return (
+                                                <li key={planet.films[index]}>
+                                                    <Link
+                                                        href={`/films/${fid}`}
+                                                        className="text-primary hover:underline block truncate"
+                                                    >
+                                                        {film.title}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                        {films.length === 0 && (
+                                            <li className="text-muted-foreground italic">No films recorded</li>
+                                        )}
                                     </ul>
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Residents</CardTitle>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <User className="h-4 w-4" /> Residents
+                                    </CardTitle>
                                     <CardDescription>{planet.residents.length} notable residents</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ul className="text-sm text-muted-foreground list-disc pl-4">
-                                        {planet.residents.slice(0, 5).map(person => (
-                                            <li key={person} className="mb-1 truncate text-xs">{person}</li>
-                                        ))}
-                                        {planet.residents.length > 5 && <li>...and {planet.residents.length - 5} more</li>}
+                                    <ul className="text-sm space-y-2">
+                                        {residents.map((person, index) => {
+                                            const pid = extractPersonId(planet.residents[index]);
+                                            return (
+                                                <li key={planet.residents[index]}>
+                                                    <Link
+                                                        href={`/people/${pid}`}
+                                                        className="text-primary hover:underline block truncate"
+                                                    >
+                                                        {person.name}
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}
+                                        {planet.residents.length > 5 && (
+                                            <li className="text-xs text-muted-foreground pt-1">
+                                                ...and {planet.residents.length - 5} more
+                                            </li>
+                                        )}
+                                        {planet.residents.length === 0 && (
+                                            <li className="text-muted-foreground italic">No residents recorded</li>
+                                        )}
                                     </ul>
                                 </CardContent>
                             </Card>
