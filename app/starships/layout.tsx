@@ -1,6 +1,3 @@
-import { StarshipsSearchField } from "@/components/starships-search-field";
-import { Suspense } from "react";
-
 export default function StarshipsLayout({
     children,
 }: {
@@ -15,10 +12,6 @@ export default function StarshipsLayout({
                         Behold the majestic vessels of the Star Wars universe.
                     </p>
                 </div>
-
-                <Suspense fallback={<div className="h-10 w-full max-w-sm rounded-lg bg-muted animate-pulse" />}>
-                    <StarshipsSearchField />
-                </Suspense>
 
                 <div>
                     {children}

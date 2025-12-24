@@ -1,6 +1,3 @@
-import { PlanetsSearchField } from "@/components/planets-search-field";
-import { Suspense } from "react";
-
 export default function PlanetsLayout({
     children,
 }: {
@@ -15,10 +12,6 @@ export default function PlanetsLayout({
                         Explore the worlds of the Star Wars universe.
                     </p>
                 </div>
-
-                <Suspense fallback={<div className="h-10 w-full max-w-sm rounded-lg bg-muted animate-pulse" />}>
-                    <PlanetsSearchField />
-                </Suspense>
 
                 <div>
                     {children}

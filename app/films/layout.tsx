@@ -1,6 +1,3 @@
-import { FilmsSearchField } from "@/components/films-search-field";
-import { Suspense } from "react";
-
 export default function FilmsLayout({
     children,
 }: {
@@ -15,10 +12,6 @@ export default function FilmsLayout({
                         Browse the cinematic saga of the Star Wars universe.
                     </p>
                 </div>
-
-                <Suspense fallback={<div className="h-10 w-full max-w-sm rounded-lg bg-muted animate-pulse" />}>
-                    <FilmsSearchField />
-                </Suspense>
 
                 <div>
                     {children}

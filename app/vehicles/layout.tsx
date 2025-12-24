@@ -1,6 +1,3 @@
-import { VehiclesSearchField } from "@/components/vehicles-search-field";
-import { Suspense } from "react";
-
 export default function VehiclesLayout({
     children,
 }: {
@@ -15,10 +12,6 @@ export default function VehiclesLayout({
                         Discover the various transports used across the galaxy.
                     </p>
                 </div>
-
-                <Suspense fallback={<div className="h-10 w-full max-w-sm rounded-lg bg-muted animate-pulse" />}>
-                    <VehiclesSearchField />
-                </Suspense>
 
                 <div>
                     {children}

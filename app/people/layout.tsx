@@ -1,6 +1,3 @@
-import { PeopleSearchField } from "@/components/people-search-field";
-import { Suspense } from "react";
-
 export default function PeopleLayout({
     children,
 }: {
@@ -15,10 +12,6 @@ export default function PeopleLayout({
                         Search and explore characters from the Star Wars universe.
                     </p>
                 </div>
-
-                <Suspense fallback={<div className="h-10 w-full max-w-sm rounded-lg bg-muted animate-pulse" />}>
-                    <PeopleSearchField />
-                </Suspense>
 
                 <div>
                     {children}

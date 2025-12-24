@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Dna, Globe, Languages } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 import { Suspense } from "react";
+import { SearchField } from "@/components/search-field";
 
 export default async function SpeciesPage({
     searchParams,
@@ -16,15 +17,27 @@ export default async function SpeciesPage({
 
     if (response.results.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-muted-foreground text-lg">No species found matching "{search}"</p>
-                <p className="text-sm text-muted-foreground">Try a different search term.</p>
+            <div className="flex flex-col gap-8">
+                <SearchField
+                    action="/species"
+                    placeholder="Search species..."
+                    defaultValue={search}
+                />
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <p className="text-muted-foreground text-lg">No species found matching "{search}"</p>
+                    <p className="text-sm text-muted-foreground">Try a different search term.</p>
+                </div>
             </div>
         );
     }
 
     return (
         <div className="flex flex-col gap-8">
+            <SearchField
+                action="/species"
+                placeholder="Search species..."
+                defaultValue={search}
+            />
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {response.results.map((species) => {
                     const id = extractIdFromUrl(species.url);

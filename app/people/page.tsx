@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 import { Suspense } from "react";
+import { SearchField } from "@/components/search-field";
 
 export default async function PeoplePage({
     searchParams,
@@ -17,6 +18,11 @@ export default async function PeoplePage({
 
     return (
         <div className="flex flex-col gap-8">
+            <SearchField
+                action="/people"
+                placeholder="Search characters..."
+                defaultValue={search}
+            />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {data.results.length === 0 ? (
                     <div className="col-span-full py-12 text-center text-muted-foreground">
