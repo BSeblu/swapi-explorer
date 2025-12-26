@@ -56,7 +56,7 @@ export async function searchPlanets(query: string, page: number = 1): Promise<Pl
     return PlanetResponseSchema.parse(data);
 }
 
-export function extractIdFromUrl(url: string): string {
-    const parts = url.split("/").filter(Boolean);
-    return parts[parts.length - 1];
+
+export function extractIdFromUrl(url: string | null): string | undefined {
+    return url?.split("/").filter(Boolean).at(-1);
 }

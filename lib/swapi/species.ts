@@ -57,8 +57,6 @@ export async function searchSpecies(query: string, page: number = 1): Promise<Sp
     return SpeciesResponseSchema.parse(data);
 }
 
-export function extractIdFromUrl(url: string | null): string | null {
-    if (!url) return null;
-    const parts = url.split("/").filter(Boolean);
-    return parts[parts.length - 1];
+export function extractIdFromUrl(url: string | null): string | undefined {
+    return url?.split("/").filter(Boolean).at(-1);
 }

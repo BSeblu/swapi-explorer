@@ -42,13 +42,13 @@ export default async function VehicleDetailPage({
             Promise.all(
                 vehicle.pilots.map(url => {
                     const pid = extractPersonId(url);
-                    return getPerson(pid).catch(() => null);
+                    return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 vehicle.films.map(url => {
                     const fid = extractFilmId(url);
-                    return getFilm(fid).catch(() => null);
+                    return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
                 })
             )
         ]);

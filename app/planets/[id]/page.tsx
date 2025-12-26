@@ -41,13 +41,13 @@ export default async function PlanetPage({
             Promise.all(
                 planet.films.map(url => {
                     const fid = extractFilmId(url);
-                    return getFilm(fid).catch(() => ({ title: "Unknown Film", url }));
+                    return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 planet.residents.slice(0, 5).map(url => {
                     const pid = extractPersonId(url);
-                    return getPerson(pid).catch(() => ({ name: "Unknown Resident", url }));
+                    return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
                 })
             )
         ]);
@@ -134,7 +134,7 @@ export default async function PlanetPage({
                                 </CardHeader>
                                 <CardContent>
                                     <ul className="text-sm space-y-2">
-                                        {films.map((film, index) => {
+                                        {films.filter(Boolean).map((film, index) => {
                                             const fid = extractFilmId(planet.films[index]);
                                             return (
                                                 <li key={planet.films[index]}>
@@ -142,7 +142,7 @@ export default async function PlanetPage({
                                                         href={`/films/${fid}`}
                                                         className="text-primary hover:underline block truncate"
                                                     >
-                                                        {film.title}
+                                                        {film!.title}
                                                     </Link>
                                                 </li>
                                             );
@@ -162,7 +162,7 @@ export default async function PlanetPage({
                                 </CardHeader>
                                 <CardContent>
                                     <ul className="text-sm space-y-2">
-                                        {residents.map((person, index) => {
+                                        {residents.filter(Boolean).map((person, index) => {
                                             const pid = extractPersonId(planet.residents[index]);
                                             return (
                                                 <li key={planet.residents[index]}>
@@ -170,7 +170,7 @@ export default async function PlanetPage({
                                                         href={`/people/${pid}`}
                                                         className="text-primary hover:underline block truncate"
                                                     >
-                                                        {person.name}
+                                                        {person!.name}
                                                     </Link>
                                                 </li>
                                             );

@@ -43,29 +43,29 @@ export default async function PersonPage({
 
         // Resolve related data in parallel
         const [homeworld, films, speciesList, starshipList, vehicleList] = await Promise.all([
-            getPlanet(homeworldId).catch(() => null),
+            homeworldId ? getPlanet(homeworldId).catch(() => null) : Promise.resolve(null),
             Promise.all(
                 person.films.map(url => {
                     const fid = extractFilmId(url);
-                    return getFilm(fid).catch(() => ({ title: "Unknown Film", url }));
+                    return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 person.species.map(url => {
                     const sid = extractSpeciesId(url);
-                    return getSpecies(sid!).catch(() => ({ name: "Unknown Species", url }));
+                    return sid ? getSpecies(sid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 person.starships.map(url => {
                     const sid = extractStarshipId(url);
-                    return getStarship(sid!).catch(() => ({ name: "Unknown Starship", url }));
+                    return sid ? getStarship(sid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 person.vehicles.map(url => {
                     const vid = extractVehicleId(url);
-                    return getVehicle(vid!).catch(() => ({ name: "Unknown Vehicle", url }));
+                    return vid ? getVehicle(vid).catch(() => null) : Promise.resolve(null);
                 })
             )
         ]);
@@ -110,12 +110,12 @@ export default async function PersonPage({
                             <Separator />
                             <div className="flex flex-wrap gap-2 pt-2">
                                 <Badge variant="secondary" className="capitalize">{person.gender}</Badge>
-                                {speciesList.map((s, i) => {
+                                {speciesList.filter(Boolean).map((s, i) => {
                                     const sid = extractSpeciesId(person.species[i]);
                                     return (
                                         <Link key={person.species[i]} href={`/species/${sid}`}>
                                             <Badge variant="outline" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                                                {s.name}
+                                                {s!.name}
                                             </Badge>
                                         </Link>
                                     );
@@ -178,7 +178,7 @@ export default async function PersonPage({
                                 </CardHeader>
                                 <CardContent>
                                     <ul className="text-sm list-none space-y-2">
-                                        {films.map((film, index) => {
+                                        {films.filter(Boolean).map((film, index) => {
                                             const fid = extractFilmId(person.films[index]);
                                             return (
                                                 <li key={person.films[index]}>
@@ -186,7 +186,7 @@ export default async function PersonPage({
                                                         href={`/films/${fid}`}
                                                         className="text-primary hover:underline block truncate"
                                                     >
-                                                        {film.title}
+                                                        {film!.title}
                                                     </Link>
                                                 </li>
                                             );
@@ -208,12 +208,12 @@ export default async function PersonPage({
                                             <div className="space-y-2">
                                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Starships</span>
                                                 <ul className="text-sm space-y-1">
-                                                    {starshipList.map((ship, i) => {
+                                                    {starshipList.filter(Boolean).map((ship, i) => {
                                                         const sid = extractStarshipId(person.starships[i]);
                                                         return (
                                                             <li key={person.starships[i]}>
                                                                 <Link href={`/starships/${sid}`} className="text-primary hover:underline block truncate">
-                                                                    {ship.name}
+                                                                    {ship!.name}
                                                                 </Link>
                                                             </li>
                                                         );
@@ -225,12 +225,12 @@ export default async function PersonPage({
                                             <div className="space-y-2">
                                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Vehicles</span>
                                                 <ul className="text-sm space-y-1">
-                                                    {vehicleList.map((vehicle, i) => {
+                                                    {vehicleList.filter(Boolean).map((vehicle, i) => {
                                                         const vid = extractVehicleId(person.vehicles[i]);
                                                         return (
                                                             <li key={person.vehicles[i]}>
                                                                 <Link href={`/vehicles/${vid}`} className="text-primary hover:underline block truncate">
-                                                                    {vehicle.name}
+                                                                    {vehicle!.name}
                                                                 </Link>
                                                             </li>
                                                         );

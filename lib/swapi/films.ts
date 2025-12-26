@@ -56,7 +56,6 @@ export async function searchFilms(query: string): Promise<FilmResponse> {
     return FilmResponseSchema.parse(data);
 }
 
-export function extractIdFromUrl(url: string): string {
-    const parts = url.split("/").filter(Boolean);
-    return parts[parts.length - 1];
+export function extractIdFromUrl(url: string | null): string | undefined {
+    return url?.split("/").filter(Boolean).at(-1);
 }

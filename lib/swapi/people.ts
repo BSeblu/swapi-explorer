@@ -61,8 +61,7 @@ export async function searchPeople(query: string, page: number = 1): Promise<Peo
 /**
  * Extracts the ID from a SWAPI URL (e.g., https://swapi.dev/api/people/1/ -> 1)
  */
-export function extractIdFromUrl(url: string): string {
-    const parts = url.split('/').filter(Boolean);
-    return parts[parts.length - 1];
+export function extractIdFromUrl(url: string | null): string | undefined {
+    return url?.split("/").filter(Boolean).at(-1);
 }
 

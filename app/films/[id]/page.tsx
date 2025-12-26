@@ -43,25 +43,25 @@ export default async function FilmPage({
             Promise.all(
                 film.characters.slice(0, 8).map(url => {
                     const pid = extractPersonId(url);
-                    return getPerson(pid).catch(() => ({ name: "Unknown Character", url }));
+                    return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 film.planets.slice(0, 8).map(url => {
                     const pid = extractPlanetId(url);
-                    return getPlanet(pid).catch(() => ({ name: "Unknown Planet", url }));
+                    return pid ? getPlanet(pid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 film.starships.slice(0, 5).map(url => {
                     const sid = extractStarshipId(url);
-                    return getStarship(sid!).catch(() => ({ name: "Unknown Starship", url }));
+                    return sid ? getStarship(sid).catch(() => null) : Promise.resolve(null);
                 })
             ),
             Promise.all(
                 film.vehicles.slice(0, 5).map(url => {
                     const vid = extractVehicleId(url);
-                    return getVehicle(vid!).catch(() => ({ name: "Unknown Vehicle", url }));
+                    return vid ? getVehicle(vid).catch(() => null) : Promise.resolve(null);
                 })
             )
         ]);
@@ -132,7 +132,7 @@ export default async function FilmPage({
                             </CardHeader>
                             <CardContent>
                                 <ul className="text-sm space-y-2">
-                                    {characters.map((person, index) => {
+                                    {characters.filter(Boolean).map((person, index) => {
                                         const pid = extractPersonId(film.characters[index]);
                                         return (
                                             <li key={film.characters[index]}>
@@ -140,7 +140,7 @@ export default async function FilmPage({
                                                     href={`/people/${pid}`}
                                                     className="text-primary hover:underline block truncate"
                                                 >
-                                                    {person.name}
+                                                    {person!.name}
                                                 </Link>
                                             </li>
                                         );
@@ -163,7 +163,7 @@ export default async function FilmPage({
                             </CardHeader>
                             <CardContent>
                                 <ul className="text-sm space-y-2">
-                                    {planets.map((planet, index) => {
+                                    {planets.filter(Boolean).map((planet, index) => {
                                         const pid = extractPlanetId(film.planets[index]);
                                         return (
                                             <li key={film.planets[index]}>
@@ -171,7 +171,7 @@ export default async function FilmPage({
                                                     href={`/planets/${pid}`}
                                                     className="text-primary hover:underline block truncate"
                                                 >
-                                                    {planet.name}
+                                                    {planet!.name}
                                                 </Link>
                                             </li>
                                         );
@@ -198,7 +198,7 @@ export default async function FilmPage({
                                         <Rocket className="h-3 w-3" /> Starships
                                     </span>
                                     <ul className="text-sm space-y-1">
-                                        {starships.map((ship, index) => {
+                                        {starships.filter(Boolean).map((ship, index) => {
                                             const sid = extractStarshipId(film.starships[index]);
                                             return (
                                                 <li key={film.starships[index]}>
@@ -206,7 +206,7 @@ export default async function FilmPage({
                                                         href={`/starships/${sid}`}
                                                         className="text-primary hover:underline block truncate"
                                                     >
-                                                        {ship.name}
+                                                        {ship!.name}
                                                     </Link>
                                                 </li>
                                             );
@@ -226,7 +226,7 @@ export default async function FilmPage({
                                         <Truck className="h-3 w-3" /> Vehicles
                                     </span>
                                     <ul className="text-sm space-y-1">
-                                        {vehicles.map((vehicle, index) => {
+                                        {vehicles.filter(Boolean).map((vehicle, index) => {
                                             const vid = extractVehicleId(film.vehicles[index]);
                                             return (
                                                 <li key={film.vehicles[index]}>
@@ -234,7 +234,7 @@ export default async function FilmPage({
                                                         href={`/vehicles/${vid}`}
                                                         className="text-primary hover:underline block truncate"
                                                     >
-                                                        {vehicle.name}
+                                                        {vehicle!.name}
                                                     </Link>
                                                 </li>
                                             );
