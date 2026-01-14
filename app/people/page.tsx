@@ -26,7 +26,7 @@ export default async function PeoplePage({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {data.results.length === 0 ? (
                     <div className="col-span-full py-12 text-center text-muted-foreground">
-                        No characters found matching "{search}"
+                        No characters found matching &quot;{search}&quot;
                     </div>
                 ) : (
                     data.results.map((person) => {

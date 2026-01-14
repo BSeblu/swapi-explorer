@@ -20,7 +20,10 @@ export function usePagination({ count, itemsPerPage = 10 }: UsePaginationOptions
 
     useEffect(() => {
         if (!isPending) {
-            setLoadingDirection(null);
+            const t = setTimeout(() => {
+                setLoadingDirection(null);
+            }, 0);
+            return () => clearTimeout(t);
         }
     }, [isPending]);
 

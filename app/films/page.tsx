@@ -21,7 +21,7 @@ export default async function FilmsPage({
                     defaultValue={search}
                 />
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-muted-foreground text-lg">No films found matching "{search}"</p>
+                    <p className="text-muted-foreground text-lg">No films found matching &quot;{search}&quot;</p>
                     <p className="text-sm text-muted-foreground">Try a different search term.</p>
                 </div>
             </div>
