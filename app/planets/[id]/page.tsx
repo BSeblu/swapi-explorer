@@ -14,17 +14,11 @@ export async function generateMetadata({
     params: Promise<{ id: string }>;
 }): Promise<Metadata> {
     const { id } = await params;
-    try {
-        const planet = await getPlanet(id);
-        return {
-            title: `${planet.name} - SWAPI Explorer`,
-            description: `Details for Star Wars planet ${planet.name}`,
-        };
-    } catch {
-        return {
-            title: "Planet Not Found - SWAPI Explorer",
-        };
-    }
+    const planet = await getPlanet(id);
+    return {
+        title: `${planet.name} - SWAPI Explorer`,
+        description: `Details for Star Wars planet ${planet.name}`,
+    };
 }
 
 export default async function PlanetPage({
@@ -34,174 +28,160 @@ export default async function PlanetPage({
 }) {
     const { id } = await params;
 
-    try {
-        const planet = await getPlanet(id);
+    const planet = await getPlanet(id);
 
-        const [films, residents] = await Promise.all([
-            Promise.all(
-                planet.films.map(url => {
-                    const fid = extractFilmId(url);
-                    return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
-                })
-            ),
-            Promise.all(
-                planet.residents.slice(0, 5).map(url => {
-                    const pid = extractPersonId(url);
-                    return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
-                })
-            )
-        ]);
+    const [films, residents] = await Promise.all([
+        Promise.all(
+            planet.films.map(url => {
+                const fid = extractFilmId(url);
+                return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
+            })
+        ),
+        Promise.all(
+            planet.residents.slice(0, 5).map(url => {
+                const pid = extractPersonId(url);
+                return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
+            })
+        )
+    ]);
 
-        return (
-            <div className="flex flex-col gap-6">
-                <Link
-                    href="/planets"
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to list
-                </Link>
+    return (
+        <div className="flex flex-col gap-6">
+            <Link
+                href="/planets"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                Back to list
+            </Link>
 
-                <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
-                    <Card className="h-fit">
-                        <CardHeader className="text-center">
-                            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                <Globe className="h-10 w-10" />
-                            </div>
-                            <CardTitle className="text-2xl">{planet.name}</CardTitle>
-                            <CardDescription>Planet Profile</CardDescription>
+            <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
+                <Card className="h-fit">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <Globe className="h-10 w-10" />
+                        </div>
+                        <CardTitle className="text-2xl">{planet.name}</CardTitle>
+                        <CardDescription>Planet Profile</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <div className="flex items-center gap-3">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">Population: {planet.population}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Thermometer className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm capitalize">Climate: {planet.climate}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            <Badge variant="secondary">{planet.terrain}</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <div className="flex flex-col gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Orbital & Geographic Data</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-4">
+                        <CardContent className="grid gap-4 sm:grid-cols-2">
                             <div className="flex items-center gap-3">
-                                <Users className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">Population: {planet.population}</span>
+                                <Box className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Diameter</span>
+                                    <span className="font-medium">{planet.diameter} km</span>
+                                </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Thermometer className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm capitalize">Climate: {planet.climate}</span>
+                                <Compass className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Gravity</span>
+                                    <span className="font-medium">{planet.gravity}</span>
+                                </div>
                             </div>
-                            <Separator />
-                            <div className="flex flex-wrap gap-2 pt-2">
-                                <Badge variant="secondary">{planet.terrain}</Badge>
+                            <div className="flex items-center gap-3">
+                                <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Rotation Period</span>
+                                    <span className="font-medium">{planet.rotation_period} hours</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Orbital Period</span>
+                                    <span className="font-medium">{planet.orbital_period} days</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <div className="flex flex-col gap-6">
+                    <div className="grid gap-6 sm:grid-cols-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Orbital & Geographic Data</CardTitle>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <FilmIcon className="h-4 w-4" /> Films
+                                </CardTitle>
+                                <CardDescription>Featured in {planet.films.length} films</CardDescription>
                             </CardHeader>
-                            <CardContent className="grid gap-4 sm:grid-cols-2">
-                                <div className="flex items-center gap-3">
-                                    <Box className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Diameter</span>
-                                        <span className="font-medium">{planet.diameter} km</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Compass className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Gravity</span>
-                                        <span className="font-medium">{planet.gravity}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <RotateCcw className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Rotation Period</span>
-                                        <span className="font-medium">{planet.rotation_period} hours</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <RotateCcw className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Orbital Period</span>
-                                        <span className="font-medium">{planet.orbital_period} days</span>
-                                    </div>
-                                </div>
+                            <CardContent>
+                                <ul className="text-sm space-y-2">
+                                    {films.filter(Boolean).map((film, index) => {
+                                        const fid = extractFilmId(planet.films[index]);
+                                        return (
+                                            <li key={planet.films[index]}>
+                                                <Link
+                                                    href={`/films/${fid}`}
+                                                    className="text-primary hover:underline block truncate"
+                                                >
+                                                    {film!.title}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                    {films.length === 0 && (
+                                        <li className="text-muted-foreground italic">No films recorded</li>
+                                    )}
+                                </ul>
                             </CardContent>
                         </Card>
-
-                        <div className="grid gap-6 sm:grid-cols-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <FilmIcon className="h-4 w-4" /> Films
-                                    </CardTitle>
-                                    <CardDescription>Featured in {planet.films.length} films</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="text-sm space-y-2">
-                                        {films.filter(Boolean).map((film, index) => {
-                                            const fid = extractFilmId(planet.films[index]);
-                                            return (
-                                                <li key={planet.films[index]}>
-                                                    <Link
-                                                        href={`/films/${fid}`}
-                                                        className="text-primary hover:underline block truncate"
-                                                    >
-                                                        {film!.title}
-                                                    </Link>
-                                                </li>
-                                            );
-                                        })}
-                                        {films.length === 0 && (
-                                            <li className="text-muted-foreground italic">No films recorded</li>
-                                        )}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <User className="h-4 w-4" /> Residents
-                                    </CardTitle>
-                                    <CardDescription>{planet.residents.length} notable residents</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="text-sm space-y-2">
-                                        {residents.filter(Boolean).map((person, index) => {
-                                            const pid = extractPersonId(planet.residents[index]);
-                                            return (
-                                                <li key={planet.residents[index]}>
-                                                    <Link
-                                                        href={`/people/${pid}`}
-                                                        className="text-primary hover:underline block truncate"
-                                                    >
-                                                        {person!.name}
-                                                    </Link>
-                                                </li>
-                                            );
-                                        })}
-                                        {planet.residents.length > 5 && (
-                                            <li className="text-xs text-muted-foreground pt-1">
-                                                ...and {planet.residents.length - 5} more
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <User className="h-4 w-4" /> Residents
+                                </CardTitle>
+                                <CardDescription>{planet.residents.length} notable residents</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="text-sm space-y-2">
+                                    {residents.filter(Boolean).map((person, index) => {
+                                        const pid = extractPersonId(planet.residents[index]);
+                                        return (
+                                            <li key={planet.residents[index]}>
+                                                <Link
+                                                    href={`/people/${pid}`}
+                                                    className="text-primary hover:underline block truncate"
+                                                >
+                                                    {person!.name}
+                                                </Link>
                                             </li>
-                                        )}
-                                        {planet.residents.length === 0 && (
-                                            <li className="text-muted-foreground italic">No residents recorded</li>
-                                        )}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        </div>
+                                        );
+                                    })}
+                                    {planet.residents.length > 5 && (
+                                        <li className="text-xs text-muted-foreground pt-1">
+                                            ...and {planet.residents.length - 5} more
+                                        </li>
+                                    )}
+                                    {planet.residents.length === 0 && (
+                                        <li className="text-muted-foreground italic">No residents recorded</li>
+                                    )}
+                                </ul>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>
-        );
-    } catch (error) {
-        return (
-            <div className="flex flex-col items-center justify-center py-24 gap-4">
-                <h2 className="text-2xl font-bold">Planet not found</h2>
-                <p className="text-muted-foreground text-center max-w-md">
-                    We couldn't find the planet with ID "{id}". It might not exist in the database or there was an error fetching the data.
-                </p>
-                <Link href="/planets" className="text-primary hover:underline">
-                    Return to list
-                </Link>
-            </div>
-        );
-    }
+        </div>
+    );
 }

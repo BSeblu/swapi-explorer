@@ -1,4 +1,4 @@
-import { getStarship, extractIdFromUrl as extractStarshipId } from "@/lib/swapi/starships";
+import { getStarship } from "@/lib/swapi/starships";
 import { getPerson, extractIdFromUrl as extractPersonId } from "@/lib/swapi/people";
 import { getFilm, extractIdFromUrl as extractFilmId } from "@/lib/swapi/films";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -14,17 +14,11 @@ export async function generateMetadata({
     params: Promise<{ id: string }>;
 }): Promise<Metadata> {
     const { id } = await params;
-    try {
-        const starship = await getStarship(id);
-        return {
-            title: `${starship.name} - SWAPI Explorer`,
-            description: `Details for Star Wars starship ${starship.name}`,
-        };
-    } catch {
-        return {
-            title: "Starship Not Found - SWAPI Explorer",
-        };
-    }
+    const starship = await getStarship(id);
+    return {
+        title: `${starship.name} - SWAPI Explorer`,
+        description: `Details for Star Wars starship ${starship.name}`,
+    };
 }
 
 export default async function StarshipDetailPage({
@@ -34,176 +28,162 @@ export default async function StarshipDetailPage({
 }) {
     const { id } = await params;
 
-    try {
-        const starship = await getStarship(id);
+    const starship = await getStarship(id);
 
-        // Fetch related data in parallel
-        const [pilots, films] = await Promise.all([
-            Promise.all(
-                starship.pilots.map(url => {
-                    const pid = extractPersonId(url);
-                    return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
-                })
-            ),
-            Promise.all(
-                starship.films.map(url => {
-                    const fid = extractFilmId(url);
-                    return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
-                })
-            )
-        ]);
+    // Fetch related data in parallel
+    const [pilots, films] = await Promise.all([
+        Promise.all(
+            starship.pilots.map(url => {
+                const pid = extractPersonId(url);
+                return pid ? getPerson(pid).catch(() => null) : Promise.resolve(null);
+            })
+        ),
+        Promise.all(
+            starship.films.map(url => {
+                const fid = extractFilmId(url);
+                return fid ? getFilm(fid).catch(() => null) : Promise.resolve(null);
+            })
+        )
+    ]);
 
-        return (
-            <div className="flex flex-col gap-6">
-                <Link
-                    href="/starships"
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to list
-                </Link>
+    return (
+        <div className="flex flex-col gap-6">
+            <Link
+                href="/starships"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors w-fit"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                Back to list
+            </Link>
 
-                <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
-                    <Card className="h-fit">
-                        <CardHeader className="text-center">
-                            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                <Rocket className="h-10 w-10" />
-                            </div>
-                            <CardTitle className="text-2xl">{starship.name}</CardTitle>
-                            <CardDescription>{starship.model}</CardDescription>
+            <div className="grid gap-6 md:grid-cols-[1fr_2fr]">
+                <Card className="h-fit">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <Rocket className="h-10 w-10" />
+                        </div>
+                        <CardTitle className="text-2xl">{starship.name}</CardTitle>
+                        <CardDescription>{starship.model}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <div className="flex items-center gap-3">
+                            <Settings className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">Class: {starship.starship_class}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">Cost: {starship.cost_in_credits === "unknown" ? "Unknown" : `${Number(starship.cost_in_credits).toLocaleString()} credits`}</span>
+                        </div>
+                        <Separator />
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            <Badge variant="secondary">{starship.manufacturer.split(",")[0]}</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <div className="flex flex-col gap-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Technical Specifications</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-4">
+                        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <div className="flex items-center gap-3">
-                                <Settings className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">Class: {starship.starship_class}</span>
+                                <Ruler className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Length</span>
+                                    <span className="font-medium">{starship.length} m</span>
+                                </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm">Cost: {starship.cost_in_credits === "unknown" ? "Unknown" : `${Number(starship.cost_in_credits).toLocaleString()} credits`}</span>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Crew</span>
+                                    <span className="font-medium">{starship.crew}</span>
+                                </div>
                             </div>
-                            <Separator />
-                            <div className="flex flex-wrap gap-2 pt-2">
-                                <Badge variant="secondary">{starship.manufacturer.split(",")[0]}</Badge>
+                            <div className="flex items-center gap-3">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Passengers</span>
+                                    <span className="font-medium">{starship.passengers}</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Gauge className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Max Atmospheric Speed</span>
+                                    <span className="font-medium">{starship.max_atmosphering_speed}</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Zap className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">Hyperdrive Rating</span>
+                                    <span className="font-medium">{starship.hyperdrive_rating}</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Zap className="h-4 w-4 text-muted-foreground" />
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">MGLT</span>
+                                    <span className="font-medium">{starship.MGLT}</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <div className="flex flex-col gap-6">
+                    <div className="grid gap-6 sm:grid-cols-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Technical Specifications</CardTitle>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Users className="h-4 w-4" /> Notable Pilots
+                                </CardTitle>
+                                <CardDescription>{starship.pilots.length} recorded pilots</CardDescription>
                             </CardHeader>
-                            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                <div className="flex items-center gap-3">
-                                    <Ruler className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Length</span>
-                                        <span className="font-medium">{starship.length} m</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Crew</span>
-                                        <span className="font-medium">{starship.crew}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Users className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Passengers</span>
-                                        <span className="font-medium">{starship.passengers}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Gauge className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Max Atmospheric Speed</span>
-                                        <span className="font-medium">{starship.max_atmosphering_speed}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Zap className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">Hyperdrive Rating</span>
-                                        <span className="font-medium">{starship.hyperdrive_rating}</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Zap className="h-4 w-4 text-muted-foreground" />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">MGLT</span>
-                                        <span className="font-medium">{starship.MGLT}</span>
-                                    </div>
-                                </div>
+                            <CardContent>
+                                <ul className="text-sm space-y-2">
+                                    {pilots.filter(Boolean).map((person, index) => {
+                                        const pid = extractPersonId(starship.pilots[index]);
+                                        return (
+                                            <li key={starship.pilots[index]}>
+                                                <Link href={`/people/${pid}`} className="text-primary hover:underline block truncate">
+                                                    {person!.name}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                    {starship.pilots.length === 0 && (
+                                        <li className="text-muted-foreground italic text-xs">No records found.</li>
+                                    )}
+                                </ul>
                             </CardContent>
                         </Card>
 
-                        <div className="grid gap-6 sm:grid-cols-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <Users className="h-4 w-4" /> Notable Pilots
-                                    </CardTitle>
-                                    <CardDescription>{starship.pilots.length} recorded pilots</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="text-sm space-y-2">
-                                        {pilots.filter(Boolean).map((person, index) => {
-                                            const pid = extractPersonId(starship.pilots[index]);
-                                            return (
-                                                <li key={starship.pilots[index]}>
-                                                    <Link href={`/people/${pid}`} className="text-primary hover:underline block truncate">
-                                                        {person!.name}
-                                                    </Link>
-                                                </li>
-                                            );
-                                        })}
-                                        {starship.pilots.length === 0 && (
-                                            <li className="text-muted-foreground italic text-xs">No records found.</li>
-                                        )}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <Film className="h-4 w-4" /> Films
-                                    </CardTitle>
-                                    <CardDescription>Featured in {starship.films.length} films</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ul className="text-sm space-y-2">
-                                        {films.filter(Boolean).map((film, index) => {
-                                            const fid = extractFilmId(starship.films[index]);
-                                            return (
-                                                <li key={starship.films[index]}>
-                                                    <Link href={`/films/${fid}`} className="text-primary hover:underline block truncate">
-                                                        {film!.title}
-                                                    </Link>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </CardContent>
-                            </Card>
-                        </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Film className="h-4 w-4" /> Films
+                                </CardTitle>
+                                <CardDescription>Featured in {starship.films.length} films</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="text-sm space-y-2">
+                                    {films.filter(Boolean).map((film, index) => {
+                                        const fid = extractFilmId(starship.films[index]);
+                                        return (
+                                            <li key={starship.films[index]}>
+                                                <Link href={`/films/${fid}`} className="text-primary hover:underline block truncate">
+                                                    {film!.title}
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>
-        );
-    } catch (error) {
-        return (
-            <div className="flex flex-col items-center justify-center py-24 gap-4">
-                <h2 className="text-2xl font-bold">Starship not found</h2>
-                <p className="text-muted-foreground text-center max-w-md">
-                    We couldn't find the starship with ID "{id}". It might not exist in the database or there was an error fetching the data.
-                </p>
-                <Link href="/starships" className="text-primary hover:underline">
-                    Return to list
-                </Link>
-            </div>
-        );
-    }
+        </div>
+    );
 }
